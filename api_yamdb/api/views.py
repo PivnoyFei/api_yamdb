@@ -1,3 +1,6 @@
 from django.shortcuts import render
+from rest_framework import viewsets
+from users.permissions import IsAdmin
 
-# Create your views here.
+class ReviewViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAdmin]
