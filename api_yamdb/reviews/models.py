@@ -1,9 +1,8 @@
+from api.validators import year_validator
+from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 from django.db.models.constraints import UniqueConstraint
-
-from api.validators import year_validator
 
 
 class User(AbstractUser):
@@ -16,10 +15,10 @@ class User(AbstractUser):
         (ADMIN, ADMIN),
     )
     username = models.CharField(
-        "Никнейм", max_length=150, blank=True, unique=True,
+        "Никнейм", max_length=150, unique=True,
     )
     email = models.EmailField(
-        "Электронная почта", unique=True, blank=True, max_length=254,
+        "Электронная почта", unique=True, max_length=254,
     )
     role = models.CharField(
         "Роль", max_length=30, default=USER, choices=USERS_ROLE,
@@ -33,7 +32,6 @@ class User(AbstractUser):
     last_name = models.CharField(
         "Фамилия", max_length=150, blank=True
     )
-
 
     class Meta(AbstractUser.Meta):
         ordering = ("username",)
@@ -53,15 +51,8 @@ class User(AbstractUser):
 
 
 class Category(models.Model):
-    name = models.CharField(
-        max_length=256, 
-        verbose_name='Категория'
-    )
-    slug = models.SlugField(
-        max_length=50, 
-        unique=True, 
-        blank=True,
-    )
+    name = models.CharField('Категория', max_length=256)
+    slug = models.SlugField(max_length=50, unique=True)
 
     class Meta:
         verbose_name = 'Категория'
@@ -72,15 +63,8 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
-    name = models.CharField(
-        max_length=256,
-        verbose_name='Жанр'
-    )
-    slug = models.SlugField(
-        max_length=50, 
-        unique=True, 
-        blank=True,
-    )
+    name = models.CharField('Жанр', max_length=256)
+    slug = models.SlugField(max_length=50, unique=True)
 
     class Meta:
         verbose_name = 'Жанр'
@@ -91,27 +75,17 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField(
-        max_length=256,
-        verbose_name='Название',
-    )
-    year = models.IntegerField(
-        verbose_name='Год выпуска',
-        validators=[year_validator]
-    )
-    description = models.TextField(
-        verbose_name='Описание'
-    )
+    name = models.CharField('Название', max_length=256)
+    year = models.IntegerField('Год выпуска', validators=[year_validator])
+    description = models.TextField('Описание')
+    genre = models.ManyToManyField(Genre, verbose_name='Жанр')
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
+        blank=True,
         null=True,
         related_name='category',
         verbose_name='Категория',
-    )
-    genre = models.ManyToManyField(
-        Genre,
-        verbose_name='Жанр',
     )
 
     class Meta:
@@ -133,14 +107,14 @@ class Review(models.Model):
         verbose_name='Автор',
     )
     score = models.PositiveSmallIntegerField(
-        verbose_name = 'оценка',
+        'оценка',
         validators=[
             MinValueValidator(1, 'минимальная оценка 1'),
             MaxValueValidator(10, 'максимальная оценка 10')
         ]
     )
     pub_date = models.DateTimeField(
-        verbose_name='дата публикации',
+        'дата публикации',
         auto_now_add=True,
         db_index=True
     )
@@ -174,7 +148,7 @@ class Comments(models.Model):
         verbose_name='Автор',
     )
     pub_date = models.DateTimeField(
-        verbose_name='дата публикации',
+        'дата публикации',
         auto_now_add=True,
         db_index=True
     )

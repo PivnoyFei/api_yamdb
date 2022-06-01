@@ -1,7 +1,5 @@
-from reviews.models import User
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
-from django.shortcuts import get_object_or_404
+from reviews.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -13,23 +11,24 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=True)
+    username = serializers.CharField(required=True)
     class Meta:
         model = User
-        fields = (
-            "username", "email"
-        )
+        fields = ("username", "email")
 
     def validate(self, data):
         if data["username"] == "me":
-            raise serializers.ValidationError('Нельзя создать пользователя с никнеймом - "me"')
+            raise serializers.ValidationError(
+                'Нельзя создать пользователя с никнеймом - "me"'
+            )
         return data
 
 
 class TokenSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(required=True)
+    username = serializers.CharField(required=True)
     confirmation_code = serializers.CharField(required=True)
+
     class Meta:
         model = User
-        fields = (
-            "username", "email"
-        )
+        fields = ("username", "confirmation_code")
