@@ -3,6 +3,7 @@ from reviews.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
+  
     class Meta:
         model = User
         fields = (
@@ -13,6 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
 class SignUpSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
     username = serializers.CharField(required=True)
+
     class Meta:
         model = User
         fields = ("username", "email")
