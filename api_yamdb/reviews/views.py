@@ -3,9 +3,8 @@ from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
 
 from reviews.permissions import IsAuthorOrAdminOrModerator
-from reviews.models import Review
+from reviews.models import Review, Title
 from reviews.serializers import CommentsSerializer, ReviewSerializer
-from reviews.models import Title
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
