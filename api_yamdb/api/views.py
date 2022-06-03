@@ -5,9 +5,10 @@ from api.permissions import (IsAdmin, IsAdminOrReadOnlyAnonymusPermission,
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins, permissions, status, viewsets
+from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -54,6 +55,10 @@ class TitleViewSet(viewsets.ModelViewSet):
             return serializers.TitleCreateSerializer
         return serializers.TitleSerializer
 
+    def get_queryset(self):
+        return Title.objects.annotate(rating=Avg(
+            "reviews__score")).order_by("id")
+
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ReviewSerializer
@@ -96,6 +101,9 @@ class GetMixin(mixins.ListModelMixin,
                mixins.CreateModelMixin,
                mixins.DestroyModelMixin,
                viewsets.GenericViewSet):
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter,
+                       filters.OrderingFilter)
+    filterset_fields = ('name',)
     search_fields = ('name',)
     lookup_field = 'slug'
     pagination_class = PageNumberPagination

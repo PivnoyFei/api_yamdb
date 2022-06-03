@@ -96,6 +96,14 @@ class Title(models.Model):
         return self.name
 
 
+class GenreTitle(models.Model):
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
+    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+
+    def __str__(self) -> str:
+        return f'{self.genre} {self.title}'
+
+
 class Review(models.Model):
     text = models.TextField('Название')
     author = models.ForeignKey(
