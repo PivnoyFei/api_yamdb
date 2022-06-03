@@ -1,24 +1,16 @@
-from api.permissions import (
-    IsAdmin,
-    IsAuthorOrAdminOrModerator,
-    IsAdminOrReadOnlyAnonymusPermission
-)
 from api import serializers
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions, status, viewsets, filters, mixins
+from rest_framework.permissions import AllowAny
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.pagination import (
-    PageNumberPagination,
-    LimitOffsetPagination
-)
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from reviews.models import User, Review, Title, Genre, Category
+from reviews.models import User, Review, Title
 from .filters import TitleFilter
-from rest_framework.permissions import AllowAny
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -142,8 +134,8 @@ def get_token(request):
         {"WRONG CODE": "Неверный код подтверждения"},
         status=status.HTTP_400_BAD_REQUEST
     )
-
-
+  
+  
 ADMIN_EMAIL = 'Admin@YaMDb.ru'
 
 
