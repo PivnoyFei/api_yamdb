@@ -1,19 +1,18 @@
+from api import serializers
+from api.filters import TitleFilter
+from api.permissions import (IsAdmin, IsAdminOrReadOnlyAnonymusPermission,
+                             IsAuthorOrAdminOrModerator)
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
-from api import serializers
-from api.filters import TitleFilter
-from api.permissions import (IsAdmin, IsAdminOrReadOnlyAnonymusPermission,
-                             IsAuthorOrAdminOrModerator)
 from reviews.models import Category, Genre, Review, Title, User
-from django_filters.rest_framework import DjangoFilterBackend
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -101,6 +100,7 @@ class GetMixin(mixins.ListModelMixin,
     lookup_field = 'slug'
     pagination_class = PageNumberPagination
     permission_classes = (IsAdminOrReadOnlyAnonymusPermission,)
+
 
 class GenreViewSet(GetMixin):
     queryset = Genre.objects.all()
