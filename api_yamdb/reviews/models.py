@@ -1,8 +1,9 @@
-from api.validators import year_validator
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
+
+from api.validators import year_validator
 
 
 class User(AbstractUser):
@@ -51,8 +52,8 @@ class User(AbstractUser):
 
 
 class Category(models.Model):
-    name = models.CharField('Категория', max_length=256)
-    slug = models.SlugField(max_length=50, unique=True)
+    name = models.CharField('Категория', max_length=256, unique=True)
+    slug = models.SlugField(max_length=50, unique=True, db_index=True)
 
     class Meta:
         verbose_name = 'Категория'
@@ -63,8 +64,8 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
-    name = models.CharField('Жанр', max_length=256)
-    slug = models.SlugField(max_length=50, unique=True)
+    name = models.CharField('Жанр', max_length=256, unique=True)
+    slug = models.SlugField(max_length=50, unique=True, db_index=True)
 
     class Meta:
         verbose_name = 'Жанр'
@@ -97,9 +98,7 @@ class Title(models.Model):
 
 
 class Review(models.Model):
-    text = models.TextField(
-        verbose_name='Название'
-    )
+    text = models.TextField('Название')
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -107,8 +106,7 @@ class Review(models.Model):
         verbose_name='Автор',
     )
     score = models.PositiveSmallIntegerField(
-        'оценка',
-        validators=[
+        'оценка', validators=[
             MinValueValidator(1, 'минимальная оценка 1'),
             MaxValueValidator(10, 'максимальная оценка 10')
         ]
@@ -163,7 +161,7 @@ class Comments(models.Model):
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
-        ordering = ('pub_date',)
+        ordering = ('-pub_date',)
 
     def __str__(self):
         return self.text[:15]

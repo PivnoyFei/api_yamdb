@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
-from reviews.models import User, Comments, Review, Title, Category, Genre
+
+from reviews.models import Category, Comments, Genre, Review, Title, User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -40,19 +41,32 @@ class TokenSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        exclude = ('id',)
+        fields = ("name", "slug")
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
-        exclude = ('id',)
+        fields = ("name", "slug")
 
 
 class TitleSerializer(serializers.ModelSerializer):
     rating = serializers.IntegerField(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
     category = CategorySerializer(read_only=True)
+
+    class Meta:
+        fields = "__all__"
+        model = Title
+
+
+class TitleCreateSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(
+        slug_field="slug", queryset=Category.objects.all()
+    )
+    genre = serializers.SlugRelatedField(
+        many=True, slug_field="slug", queryset=Genre.objects.all()
+    )
 
     class Meta:
         fields = "__all__"
@@ -95,28 +109,10 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class CommentsSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
-        slug_field='username',
-        read_only=True,
-        default=serializers.CurrentUserDefault(),
-    )
-    review = serializers.SlugRelatedField(
-        slug_field='text',
-        read_only=True
+        slug_field='username', read_only=True,
     )
 
     class Meta:
         model = Comments
         fields = '__all__'
-        read_only_fields = ('id', 'review')
-
-
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        exclude = ('name', 'slug')
-
-
-class GenreSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Genre
-        exclude = ('name', 'slug')
+        read_only_fields = ('id', 'author', 'review')
