@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Category, Genre, Review, Title, User
@@ -20,7 +20,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = serializers.UserSerializer
     permission_classes = (permissions.IsAuthenticated, IsAdmin)
-    pagination_class = PageNumberPagination
+    pagination_class = LimitOffsetPagination
     lookup_field = "username"
 
     @action(methods=["patch", "get"], detail=False,
@@ -46,7 +46,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticatedOrReadOnly,
         IsAdminOrReadOnlyAnonymusPermission
     )
-    pagination_class = PageNumberPagination
+    pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
@@ -63,7 +63,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ReviewSerializer
     permission_classes = (IsAuthorOrAdminOrModerator,)
-    pagination_class = PageNumberPagination
+    pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
@@ -78,7 +78,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentsViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.CommentsSerializer
     permission_classes = (IsAuthorOrAdminOrModerator,)
-    pagination_class = PageNumberPagination
+    pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
         review = get_object_or_404(
@@ -106,7 +106,7 @@ class GetMixin(mixins.ListModelMixin,
     filterset_fields = ('name',)
     search_fields = ('name',)
     lookup_field = 'slug'
-    pagination_class = PageNumberPagination
+    pagination_class = LimitOffsetPagination
     permission_classes = (IsAdminOrReadOnlyAnonymusPermission,)
 
 
