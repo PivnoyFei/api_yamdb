@@ -1,10 +1,9 @@
-from api.permissions import IsAdmin, IsAuthorOrAdminOrModerator
-from django_filters.rest_framework import DjangoFilterBackend
 from api import serializers
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
+from rest_framework.permissions import AllowAny
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
@@ -12,8 +11,6 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import User, Review, Title
 from .filters import TitleFilter
-
-#from rest_framework.pagination import LimitOffsetPagination
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -42,9 +39,13 @@ class UserViewSet(viewsets.ModelViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = serializers.TitleSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsAuthorOrAdminOrModerator)
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly,
+        IsAuthorOrAdminOrModerator
+    )
     pagination_class = PageNumberPagination
     filterset_class = TitleFilter
+
     def get_serializer_class(self):
         if self.request.method in permissions.SAFE_METHODS:
             return serializers.TitleSerializer
@@ -92,7 +93,6 @@ class CommentsViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, review=review)
 
 
-
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
 def get_signup(request):
@@ -134,3 +134,61 @@ def get_token(request):
         {"WRONG CODE": "Неверный код подтверждения"},
         status=status.HTTP_400_BAD_REQUEST
     )
+  
+  
+ADMIN_EMAIL = 'Admin@YaMDb.ru'
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def code(request):
+    serializer = serializers.UserSerializer(data=request.data)
+    if serializer.is_valid():
+        username = serializer.data['username']
+        email = serializer.data['email']
+        user = get_object_or_404(User, username=username, email=email)
+        send_confirmation_code(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def send_confirmation_code(user):
+    confirmation_code = default_token_generator.make_token(user)
+    subject = 'Код подтверждения YaMDb'
+    message = f'{confirmation_code} - ваш код для авторизации на YaMDb'
+    admin_email = ADMIN_EMAIL
+    user_email = [user.email]
+    return send_mail(subject, message, admin_email, user_email)
+
+
+class GetListCreateDeleteViewSet(mixins.ListModelMixin,
+                                 mixins.CreateModelMixin,
+                                 mixins.DestroyModelMixin,
+                                 viewsets.GenericViewSet):
+    pass
+
+
+class GenreViewSet(GetListCreateDeleteViewSet):
+    lookup_field = 'slug'
+    queryset = Genre.objects.all()
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    serializer_class = serializers.GenreSerializer
+    pagination_class = LimitOffsetPagination
+    permission_classes = (IsAdminOrReadOnlyAnonymusPermission,)
+
+
+class CreateListDestroyViewSet(mixins.CreateModelMixin,
+                               mixins.ListModelMixin,
+                               mixins.DestroyModelMixin,
+                               viewsets.GenericViewSet):
+    pass
+
+
+class CategoryViewSet(CreateListDestroyViewSet):
+    queryset = Category.objects.all()
+    serializer_class = serializers.CategorySerializer
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
+    permission_classes = (IsAdminOrReadOnlyAnonymusPermission,)

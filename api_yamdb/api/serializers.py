@@ -4,7 +4,7 @@ from reviews.models import User, Comments, Review, Title, Category, Genre
 
 
 class UserSerializer(serializers.ModelSerializer):
-  
+
     class Meta:
         model = User
         fields = (
@@ -82,6 +82,11 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('нельзя оставить отзыв дважды')
         return Review.objects.create(**validated_data)
 
+    def validate_score(self, value):
+        if 0 >= value >= 10:
+            raise serializers.ValidationError('Проверьте оценку')
+        return value
+
     class Meta:
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date', 'title')
@@ -103,3 +108,15 @@ class CommentsSerializer(serializers.ModelSerializer):
         model = Comments
         fields = '__all__'
         read_only_fields = ('id', 'review')
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        exclude = ('name', 'slug')
+
+
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
+        exclude = ('name', 'slug')
