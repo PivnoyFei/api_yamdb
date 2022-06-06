@@ -14,9 +14,6 @@ class User(AbstractUser):
         (MODERATOR, MODERATOR),
         (ADMIN, ADMIN),
     )
-    username = models.CharField(
-        "Никнейм", max_length=150, unique=True,
-    )
     email = models.EmailField(
         "Электронная почта", unique=True, max_length=254,
     )
@@ -25,12 +22,6 @@ class User(AbstractUser):
     )
     bio = models.TextField(
         "Обо мне", max_length=300, blank=True
-    )
-    first_name = models.CharField(
-        "Имя", max_length=150, blank=True
-    )
-    last_name = models.CharField(
-        "Фамилия", max_length=150, blank=True
     )
 
     class Meta(AbstractUser.Meta):
@@ -76,7 +67,9 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.CharField('Название', max_length=256)
-    year = models.IntegerField('Год выпуска', validators=[year_validator])
+    year = models.PositiveSmallIntegerField(
+        'Год выпуска', validators=[year_validator]
+    )
     description = models.TextField('Описание')
     genre = models.ManyToManyField(Genre, verbose_name='Жанр')
     category = models.ForeignKey(
@@ -94,14 +87,6 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class GenreTitle(models.Model):
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
-
-    def __str__(self) -> str:
-        return f'{self.genre} {self.title}'
 
 
 class Review(models.Model):

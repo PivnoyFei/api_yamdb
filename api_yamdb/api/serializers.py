@@ -21,9 +21,23 @@ class SignUpSerializer(serializers.ModelSerializer):
         fields = ("username", "email")
 
     def validate(self, data):
-        if data["username"] == "me":
+        username = data.get("username")
+        email = data.get("email")
+        if username == "me":
             raise serializers.ValidationError(
                 'Нельзя создать пользователя с никнеймом - "me"'
+            )
+        if User.objects.filter(
+            username=username
+        ) and User.objects.get(username=username) != email:
+            raise serializers.ValidationError(
+                "Этот никнайм уже занят"
+            )
+        if User.objects.filter(
+            email=email
+        ) and User.objects.get(email=email) != username:
+            raise serializers.ValidationError(
+                "Эта электронная почта уже используется"
             )
         return data
 
@@ -95,15 +109,15 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('нельзя оставить отзыв дважды')
         return Review.objects.create(**validated_data)
 
-    def validate_score(self, value):
-        if 0 >= value >= 10:
-            raise serializers.ValidationError('Проверьте оценку')
-        return value
-
     class Meta:
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date', 'title')
         read_only_fields = ('id', 'author', 'title')
+
+    def validate_score(self, value):
+        if 0 >= value >= 10:
+            raise serializers.ValidationError('Проверьте оценку')
+        return value
 
 
 class CommentsSerializer(serializers.ModelSerializer):
