@@ -97,6 +97,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only=True,
     )
 
+    class Meta:
+        model = Review
+        fields = ('id', 'text', 'author', 'score', 'pub_date', 'title')
+        read_only_fields = ('id', 'author', 'title')
+
     def create(self, validated_data):
         request = self.context['request']
         author = request.user
@@ -108,11 +113,6 @@ class ReviewSerializer(serializers.ModelSerializer):
                 author=author).exists():
             raise serializers.ValidationError('нельзя оставить отзыв дважды')
         return Review.objects.create(**validated_data)
-
-    class Meta:
-        model = Review
-        fields = ('id', 'text', 'author', 'score', 'pub_date', 'title')
-        read_only_fields = ('id', 'author', 'title')
 
     def validate_score(self, value):
         if 0 >= value >= 10:

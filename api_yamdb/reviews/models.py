@@ -24,7 +24,7 @@ class User(AbstractUser):
         "Обо мне", max_length=300, blank=True
     )
 
-    class Meta(AbstractUser.Meta):
+    class Meta:
         ordering = ("username",)
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
