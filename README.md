@@ -53,7 +53,7 @@ cd api_yamdb
 
 Выполняем миграции:
 ```bash
-python manage.py makemigrations reviews
+python manage.py makemigrations
 ```
 ```bash
 python manage.py migrate
